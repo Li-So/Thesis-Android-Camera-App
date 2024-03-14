@@ -17,15 +17,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -66,17 +68,31 @@ private fun CameraContent(
 
     val context: Context = LocalContext.current
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-    val cameraController: LifecycleCameraController = remember { LifecycleCameraController(context) }
+    val cameraController: LifecycleCameraController =
+        remember { LifecycleCameraController(context) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                text = { Text(text = "Take photo") },
+                content = {
+                    Icon(
+                        imageVector = Icons.Default.RadioButtonUnchecked,
+                        contentDescription = "Camera capture icon",
+                        tint = androidx.compose.ui.graphics.Color.White,
+                        modifier = Modifier
+                            .size(100.dp)
+                    )
+                },
                 onClick = { capturePhoto(context, cameraController, onPhotoCaptured) },
-                icon = { Icon(imageVector = Icons.Default.Camera, contentDescription = "Camera capture icon") }
+                containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                shape = CircleShape,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 0.dp
+                )
             )
-        }
+        },
+        floatingActionButtonPosition = FabPosition.Center
     ) { paddingValues: PaddingValues ->
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -136,7 +152,8 @@ private fun LastPhotoPreview(
     lastCapturedPhoto: Bitmap
 ) {
 
-    val capturedPhoto: ImageBitmap = remember(lastCapturedPhoto.hashCode()) { lastCapturedPhoto.asImageBitmap() }
+    val capturedPhoto: ImageBitmap =
+        remember(lastCapturedPhoto.hashCode()) { lastCapturedPhoto.asImageBitmap() }
 
     Card(
         modifier = modifier

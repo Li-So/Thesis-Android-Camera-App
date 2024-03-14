@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
@@ -39,7 +42,22 @@ private fun NoPermissionContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Please grant the permission to use the camera to use the core functionality of this app.")
+
+        Icon(
+            imageVector = Icons.Rounded.Settings,
+            contentDescription = "settings_icon",
+            modifier = Modifier
+                .size(60.dp)
+        )
+
+        Text(
+            text = "Couldn't use Camera.",
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = "To use the camera, please enable camera access in your phone's Settings",
+            textAlign = TextAlign.Center
+        )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onRequestPermission) {
             Icon(imageVector = Icons.Default.Camera, contentDescription = "Camera")
