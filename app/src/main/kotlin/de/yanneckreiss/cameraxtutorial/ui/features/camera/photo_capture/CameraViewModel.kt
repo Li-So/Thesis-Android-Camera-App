@@ -17,14 +17,13 @@ class CameraViewModel(
     private val _state = MutableStateFlow(CameraState())
     val state = _state.asStateFlow()
 
-    fun storePhotoInGallery(bitmap: Bitmap) {
+    fun storePhotoInGallery(bitmap: Bitmap){
         viewModelScope.launch {
             savePhotoToGalleryUseCase.call(bitmap)
-            updateCapturedPhotoState(bitmap)
         }
     }
 
-    private fun updateCapturedPhotoState(updatedPhoto: Bitmap?) {
+    fun updateCapturedPhotoState(updatedPhoto: Bitmap?) {
         _state.value.capturedImage?.recycle()
         _state.value = _state.value.copy(capturedImage = updatedPhoto)
     }

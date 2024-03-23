@@ -17,12 +17,10 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,7 +28,6 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -61,7 +58,7 @@ fun CameraScreen(
     val cameraState: CameraState by viewModel.state.collectAsStateWithLifecycle()
 
     CameraContent(
-        onPhotoCaptured = viewModel::storePhotoInGallery,
+        onPhotoCaptured = viewModel::updateCapturedPhotoState,
         lastCapturedPhoto = cameraState.capturedImage
     )
 }
@@ -77,64 +74,72 @@ private fun CameraContent(
     val cameraController: LifecycleCameraController =
         remember { LifecycleCameraController(context) }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                content = {
-                    Icon(
-                        imageVector = Icons.Default.RadioButtonUnchecked,
-                        contentDescription = "Camera capture icon",
-                        tint = androidx.compose.ui.graphics.Color.White,
-                        modifier = Modifier
-                            .size(100.dp)
-                    )
-                },
-                onClick = { capturePhoto(context, cameraController, onPhotoCaptured) },
-                containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                shape = CircleShape,
-                elevation = FloatingActionButtonDefaults.elevation(
-                    defaultElevation = 0.dp
-                )
-            )
-        },
-        floatingActionButtonPosition = FabPosition.Center
-    ) { paddingValues: PaddingValues ->
-
-        AndroidView(
+    if (lastCapturedPhoto != null) {
+        LastPhotoPreview(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            factory = { context ->
-                PreviewView(context).apply {
-                    layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                    setBackgroundColor(Color.BLACK)
-                    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-                    scaleType = PreviewView.ScaleType.FILL_START
-                }.also { previewView ->
-                    previewView.controller = cameraController
-                    cameraController.bindToLifecycle(lifecycleOwner)
-                }
-            }
+                .fillMaxSize(),
+            lastCapturedPhoto = lastCapturedPhoto
         )
+    } else {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            floatingActionButton = {
+                ExtendedFloatingActionButton(
+                    content = {
+                        Icon(
+                            imageVector = Icons.Default.RadioButtonUnchecked,
+                            contentDescription = "Camera capture icon",
+                            tint = androidx.compose.ui.graphics.Color.White,
+                            modifier = Modifier
+                                .size(100.dp)
+                        )
+                    },
+                    onClick = { capturePhoto(context, cameraController, onPhotoCaptured) },
+                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                    shape = CircleShape,
+                    elevation = FloatingActionButtonDefaults.elevation(
+                        defaultElevation = 0.dp
+                    )
+                )
+            },
+            floatingActionButtonPosition = FabPosition.Center
+        ) { paddingValues: PaddingValues ->
 
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onDoubleTap = {
-                        cameraController.cameraSelector =
-                            if (cameraController.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
-                                CameraSelector.DEFAULT_FRONT_CAMERA
-                            } else CameraSelector.DEFAULT_BACK_CAMERA
+            AndroidView(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                factory = { context ->
+                    PreviewView(context).apply {
+                        layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                        setBackgroundColor(Color.BLACK)
+                        implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                        scaleType = PreviewView.ScaleType.FILL_START
+                    }.also { previewView ->
+                        previewView.controller = cameraController
+                        cameraController.bindToLifecycle(lifecycleOwner)
                     }
-                )
-            }) {
-            if (lastCapturedPhoto != null) {
-                LastPhotoPreview(
-                    modifier = Modifier.align(alignment = BottomStart),
-                    lastCapturedPhoto = lastCapturedPhoto
-                )
+                }
+            )
+
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onDoubleTap = {
+                            cameraController.cameraSelector =
+                                if (cameraController.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                                    CameraSelector.DEFAULT_FRONT_CAMERA
+                                } else CameraSelector.DEFAULT_BACK_CAMERA
+                        }
+                    )
+                }) {
+                /*if (lastCapturedPhoto != null) {
+                    LastPhotoPreview(
+                        modifier = Modifier.align(alignment = BottomStart),
+                        lastCapturedPhoto = lastCapturedPhoto
+                    )
+                }*/
             }
         }
     }
@@ -173,17 +178,14 @@ private fun LastPhotoPreview(
     val capturedPhoto: ImageBitmap =
         remember(lastCapturedPhoto.hashCode()) { lastCapturedPhoto.asImageBitmap() }
 
-    Card(
+    Box(
         modifier = modifier
-            .size(128.dp)
-            .padding(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        shape = MaterialTheme.shapes.large
     ) {
         Image(
             bitmap = capturedPhoto,
             contentDescription = "Last captured photo",
-            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+            modifier = modifier
         )
     }
 }
