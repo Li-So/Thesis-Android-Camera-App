@@ -21,19 +21,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment.Companion.BottomStart
+import androidx.compose.ui.Alignment.Companion.TopEnd
+import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -56,31 +57,72 @@ fun CameraScreen(
     viewModel: CameraViewModel = koinViewModel()
 ) {
     val cameraState: CameraState by viewModel.state.collectAsStateWithLifecycle()
-
-    CameraContent(
-        onPhotoCaptured = viewModel::updateCapturedPhotoState,
-        lastCapturedPhoto = cameraState.capturedImage
-    )
-}
-
-@Composable
-private fun CameraContent(
-    onPhotoCaptured: (Bitmap) -> Unit,
-    lastCapturedPhoto: Bitmap? = null
-) {
-
     val context: Context = LocalContext.current
-    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     val cameraController: LifecycleCameraController =
         remember { LifecycleCameraController(context) }
 
-    if (lastCapturedPhoto != null) {
+
+    if(cameraState.capturedImage != null){
+        TakenPhotoPreview(
+            onPhotoSaved = viewModel::storePhotoInGallery,
+            onPhotoDismissed = viewModel::updateCapturedPhotoState ,
+            lastCapturedPhoto = cameraState.capturedImage!!
+        )
+    } else {
+        CameraContent(
+            onPhotoCaptured = viewModel::updateCapturedPhotoState,
+            cameraController = cameraController,
+            context = context
+        )
+    }
+}
+
+@Composable
+private fun TakenPhotoPreview(
+    onPhotoSaved: (Bitmap) -> Unit,
+    onPhotoDismissed: (Bitmap?) -> Unit,
+    lastCapturedPhoto: Bitmap
+){
+    Box(){
         LastPhotoPreview(
             modifier = Modifier
                 .fillMaxSize(),
             lastCapturedPhoto = lastCapturedPhoto
         )
-    } else {
+
+        IconButton(onClick = { onPhotoDismissed(null) }) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "",
+                modifier = Modifier
+                    .size(50.dp)
+                    .padding(top = 10.dp, start = 10.dp)
+                    .align(TopStart)
+            )
+        }
+
+        IconButton(
+            onClick = { onPhotoSaved(lastCapturedPhoto) },
+            modifier = Modifier
+                .size(50.dp)
+                .padding(top = 10.dp, end = 10.dp)
+                .align(TopEnd)
+        ) {
+            Icon(imageVector = Icons.Default.Download, contentDescription = "")
+        }
+
+
+    }
+}
+
+@Composable
+private fun CameraContent(
+    onPhotoCaptured: (Bitmap) -> Unit,
+    cameraController: LifecycleCameraController,
+    context: Context
+) {
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             floatingActionButton = {
@@ -133,16 +175,9 @@ private fun CameraContent(
                                 } else CameraSelector.DEFAULT_BACK_CAMERA
                         }
                     )
-                }) {
-                /*if (lastCapturedPhoto != null) {
-                    LastPhotoPreview(
-                        modifier = Modifier.align(alignment = BottomStart),
-                        lastCapturedPhoto = lastCapturedPhoto
-                    )
-                }*/
-            }
+                })
         }
-    }
+
 }
 
 
@@ -192,8 +227,6 @@ private fun LastPhotoPreview(
 
 @Preview
 @Composable
-private fun Preview_CameraContent() {
-    CameraContent(
-        onPhotoCaptured = {}
-    )
+private fun Preview_CameraScreen() {
+    CameraScreen()
 }

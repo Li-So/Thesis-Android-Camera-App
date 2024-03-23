@@ -1,6 +1,7 @@
 package de.yanneckreiss.cameraxtutorial.ui.features.camera.photo_capture
 
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.yanneckreiss.cameraxtutorial.data.usecases.SavePhotoToGalleryUseCase
@@ -19,7 +20,9 @@ class CameraViewModel(
 
     fun storePhotoInGallery(bitmap: Bitmap){
         viewModelScope.launch {
+            Log.d("","HEYEYYEYEYEYEYE")
             savePhotoToGalleryUseCase.call(bitmap)
+            updateCapturedPhotoState(null)
         }
     }
 
