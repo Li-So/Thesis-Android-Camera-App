@@ -6,19 +6,23 @@ import android.graphics.Color
 import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
+import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,6 +30,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -35,6 +40,7 @@ import androidx.compose.ui.Alignment.Companion.BottomStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
@@ -95,24 +101,35 @@ private fun CameraContent(
         floatingActionButtonPosition = FabPosition.Center
     ) { paddingValues: PaddingValues ->
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            AndroidView(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                factory = { context ->
-                    PreviewView(context).apply {
-                        layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                        setBackgroundColor(Color.BLACK)
-                        implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-                        scaleType = PreviewView.ScaleType.FILL_START
-                    }.also { previewView ->
-                        previewView.controller = cameraController
-                        cameraController.bindToLifecycle(lifecycleOwner)
-                    }
+        AndroidView(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            factory = { context ->
+                PreviewView(context).apply {
+                    layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                    setBackgroundColor(Color.BLACK)
+                    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                    scaleType = PreviewView.ScaleType.FILL_START
+                }.also { previewView ->
+                    previewView.controller = cameraController
+                    cameraController.bindToLifecycle(lifecycleOwner)
                 }
-            )
+            }
+        )
 
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        cameraController.cameraSelector =
+                            if (cameraController.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                                CameraSelector.DEFAULT_FRONT_CAMERA
+                            } else CameraSelector.DEFAULT_BACK_CAMERA
+                    }
+                )
+            }) {
             if (lastCapturedPhoto != null) {
                 LastPhotoPreview(
                     modifier = Modifier.align(alignment = BottomStart),
@@ -122,6 +139,7 @@ private fun CameraContent(
         }
     }
 }
+
 
 private fun capturePhoto(
     context: Context,
