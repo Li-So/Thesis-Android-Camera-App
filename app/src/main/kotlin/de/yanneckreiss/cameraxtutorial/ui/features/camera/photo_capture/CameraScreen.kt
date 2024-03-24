@@ -12,42 +12,60 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.yanneckreiss.cameraxtutorial.core.utils.rotateBitmap
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import java.util.concurrent.Executor
 
@@ -60,20 +78,29 @@ fun CameraScreen(
     val context: Context = LocalContext.current
     val cameraController: LifecycleCameraController =
         remember { LifecycleCameraController(context) }
+    var isVisible by remember { mutableStateOf(false) }
 
+    Box{
+        if (cameraState.capturedImage != null) {
+            TakenPhotoPreview(
+                onPhotoSaved = viewModel::storePhotoInGallery,
+                onPhotoDismissed = viewModel::updateCapturedPhotoState,
+                lastCapturedPhoto = cameraState.capturedImage!!,
+                showTopToast = { isVisible = true }
+            )
+        } else {
+            CameraContent(
+                onPhotoCaptured = viewModel::updateCapturedPhotoState,
+                cameraController = cameraController,
+                context = context
+            )
+        }
+        TopScreenToast(
+            isVisible = isVisible,
+            toggleVisible = { isVisible = false },
+            text = "Photo was saved to camera roll"
+        )
 
-    if(cameraState.capturedImage != null){
-        TakenPhotoPreview(
-            onPhotoSaved = viewModel::storePhotoInGallery,
-            onPhotoDismissed = viewModel::updateCapturedPhotoState ,
-            lastCapturedPhoto = cameraState.capturedImage!!
-        )
-    } else {
-        CameraContent(
-            onPhotoCaptured = viewModel::updateCapturedPhotoState,
-            cameraController = cameraController,
-            context = context
-        )
     }
 }
 
@@ -81,7 +108,8 @@ fun CameraScreen(
 private fun TakenPhotoPreview(
     onPhotoSaved: (Bitmap) -> Unit,
     onPhotoDismissed: (Bitmap?) -> Unit,
-    lastCapturedPhoto: Bitmap
+    lastCapturedPhoto: Bitmap,
+    showTopToast: () -> Unit
 ){
     Box(){
         LastPhotoPreview(
@@ -102,7 +130,10 @@ private fun TakenPhotoPreview(
         }
 
         IconButton(
-            onClick = { onPhotoSaved(lastCapturedPhoto) },
+            onClick = {
+                onPhotoSaved(lastCapturedPhoto)
+                showTopToast()
+                      },
             modifier = Modifier
                 .size(50.dp)
                 .padding(top = 10.dp, end = 10.dp)
@@ -123,17 +154,17 @@ private fun CameraContent(
 ) {
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            floatingActionButton = {
-                ExtendedFloatingActionButton(
-                    content = {
-                        Icon(
-                            imageVector = Icons.Default.RadioButtonUnchecked,
-                            contentDescription = "Camera capture icon",
-                            tint = androidx.compose.ui.graphics.Color.White,
-                            modifier = Modifier
-                                .size(100.dp)
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                content = {
+                    Icon(
+                        imageVector = Icons.Default.RadioButtonUnchecked,
+                        contentDescription = "Camera capture icon",
+                        tint = androidx.compose.ui.graphics.Color.White,
+                        modifier = Modifier
+                            .size(100.dp)
                         )
                     },
                     onClick = { capturePhoto(context, cameraController, onPhotoCaptured) },
@@ -222,6 +253,43 @@ private fun LastPhotoPreview(
             contentScale = androidx.compose.ui.layout.ContentScale.Crop,
             modifier = modifier
         )
+    }
+}
+
+@Composable
+fun TopScreenToast(
+    isVisible: Boolean,
+    toggleVisible: () -> Unit,
+    text: String
+){
+    LaunchedEffect(key1 = isVisible) {
+        delay(2000)
+        toggleVisible()
+    }
+
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(durationMillis = 1000)),
+        exit = fadeOut(animationSpec = tween(durationMillis = 1000))
+    ){
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            Text(
+                text = text,
+                textAlign = TextAlign.Center,
+                lineHeight = 4.em,
+                color = androidx.compose.ui.graphics.Color.White,
+                modifier = Modifier
+                    .align(TopCenter)
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .padding(start = 70.dp, top = 10.dp, end = 70.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(androidx.compose.ui.graphics.Color.Green)
+            )
+        }
     }
 }
 
