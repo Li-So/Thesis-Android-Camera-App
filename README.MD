@@ -8,7 +8,7 @@ This app was adapted from Yanneck-Reiss app in order to expedite the development
 
 Please have a look at the original code from him at this [link](https://github.com/YanneckReiss/JetpackComposeCameraXShowcase) or have a look at some of his socials.
 
-If you like, you can read Yanneck-Reiss article [Medium article](https://medium.com/tech-takeaways/how-to-use-camerax-with-android-jetpack-compose-38a236e209a3) or watch my [YouTube video](https://www.youtube.com/watch?v=pPVZambOuG8).
+If you like, you can read Yanneck-Reiss article [Medium article](https://medium.com/tech-takeaways/how-to-use-camerax-with-android-jetpack-compose-38a236e209a3) or watch his [YouTube video](https://www.youtube.com/watch?v=pPVZambOuG8).
 
 ## Used libraries
 
