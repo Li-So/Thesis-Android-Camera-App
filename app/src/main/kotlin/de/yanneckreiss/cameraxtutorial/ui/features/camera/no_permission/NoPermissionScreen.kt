@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -42,6 +43,9 @@ private fun NoPermissionContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        LaunchedEffect(key1 = true) {
+            onRequestPermission()
+        }
 
         Icon(
             imageVector = Icons.Rounded.Settings,
@@ -58,11 +62,6 @@ private fun NoPermissionContent(
             text = "To use the camera, please enable camera access in your phone's Settings",
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onRequestPermission) {
-            Icon(imageVector = Icons.Default.Camera, contentDescription = "Camera")
-            Text(text = "Grant permission")
-        }
     }
 }
 
