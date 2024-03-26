@@ -31,6 +31,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.FlashOff
+import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
@@ -78,6 +80,7 @@ fun CameraScreen(
     val cameraController: LifecycleCameraController =
         remember { LifecycleCameraController(context) }
     var isVisible by remember { mutableStateOf(false) }
+    val flashMode: Int by viewModel.flashState.collectAsStateWithLifecycle()
 
     Box{
         if (cameraState.capturedImage != null) {
@@ -91,7 +94,9 @@ fun CameraScreen(
             CameraContent(
                 onPhotoCaptured = viewModel::updateCapturedPhotoState,
                 cameraController = cameraController,
-                context = context
+                context = context,
+                flashMode = flashMode,
+                setFlashMode = viewModel::setFlashMode
             )
         }
         TopScreenToast(
@@ -149,9 +154,12 @@ private fun TakenPhotoPreview(
 private fun CameraContent(
     onPhotoCaptured: (Bitmap) -> Unit,
     cameraController: LifecycleCameraController,
-    context: Context
+    context: Context,
+    flashMode: Int,
+    setFlashMode: (Int) -> Unit
 ) {
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+    cameraController.imageCaptureFlashMode = flashMode
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -205,7 +213,28 @@ private fun CameraContent(
                                 } else CameraSelector.DEFAULT_BACK_CAMERA
                         }
                     )
-                })
+                }){
+
+                if(flashMode == ImageCapture.FLASH_MODE_OFF){
+                    IconButton(onClick = {
+                         setFlashMode(ImageCapture.FLASH_MODE_ON)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.FlashOn,
+                            contentDescription = null
+                        )
+                    }
+                } else {
+                    IconButton(onClick = {
+                        setFlashMode(ImageCapture.FLASH_MODE_OFF)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.FlashOff,
+                            contentDescription = null
+                        )
+                    }
+                }
+            }
         }
 
 }

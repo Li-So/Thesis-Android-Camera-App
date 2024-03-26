@@ -2,6 +2,7 @@ package de.yanneckreiss.cameraxtutorial.ui.features.camera.photo_capture
 
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.camera.core.ImageCapture
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.yanneckreiss.cameraxtutorial.data.usecases.SavePhotoToGalleryUseCase
@@ -17,6 +18,12 @@ class CameraViewModel(
 
     private val _state = MutableStateFlow(CameraState())
     val state = _state.asStateFlow()
+    private val _flashState = MutableStateFlow(ImageCapture.FLASH_MODE_OFF)
+    val flashState = _flashState.asStateFlow()
+
+    fun setFlashMode(flashMode: Int){
+        _flashState.value = flashMode
+    }
 
     fun storePhotoInGallery(bitmap: Bitmap){
         viewModelScope.launch {
