@@ -81,6 +81,7 @@ fun CameraScreen(
         remember { LifecycleCameraController(context) }
     var isVisible by remember { mutableStateOf(false) }
     val flashMode: Int by viewModel.flashState.collectAsStateWithLifecycle()
+    val cameraSelector: CameraSelector by viewModel.cameraSelector.collectAsStateWithLifecycle()
 
     Box{
         if (cameraState.capturedImage != null) {
@@ -96,7 +97,9 @@ fun CameraScreen(
                 cameraController = cameraController,
                 context = context,
                 flashMode = flashMode,
-                setFlashMode = viewModel::setFlashMode
+                setFlashMode = viewModel::setFlashMode,
+                cameraSelector = cameraSelector,
+                setCameraSelector = viewModel::setCameraSelector
             )
         }
         TopScreenToast(
@@ -156,10 +159,13 @@ private fun CameraContent(
     cameraController: LifecycleCameraController,
     context: Context,
     flashMode: Int,
-    setFlashMode: (Int) -> Unit
+    setFlashMode: (Int) -> Unit,
+    cameraSelector: CameraSelector,
+    setCameraSelector: (CameraSelector) -> Unit
 ) {
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     cameraController.imageCaptureFlashMode = flashMode
+    cameraController.cameraSelector = cameraSelector
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -207,33 +213,38 @@ private fun CameraContent(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onDoubleTap = {
-                            cameraController.cameraSelector =
-                                if (cameraController.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
-                                    CameraSelector.DEFAULT_FRONT_CAMERA
-                                } else CameraSelector.DEFAULT_BACK_CAMERA
+                            when(cameraController.cameraSelector){
+                                CameraSelector.DEFAULT_FRONT_CAMERA -> setCameraSelector(
+                                    CameraSelector.DEFAULT_BACK_CAMERA)
+                                CameraSelector.DEFAULT_BACK_CAMERA -> setCameraSelector(
+                                    CameraSelector.DEFAULT_FRONT_CAMERA)
+                            }
                         }
                     )
                 }){
-
-                if(flashMode == ImageCapture.FLASH_MODE_OFF){
-                    IconButton(onClick = {
-                         setFlashMode(ImageCapture.FLASH_MODE_ON)
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.FlashOn,
-                            contentDescription = null
-                        )
-                    }
-                } else {
-                    IconButton(onClick = {
-                        setFlashMode(ImageCapture.FLASH_MODE_OFF)
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.FlashOff,
-                            contentDescription = null
-                        )
+                if(cameraController.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA){
+                    if (flashMode == ImageCapture.FLASH_MODE_OFF) {
+                        IconButton(onClick = {
+                            setFlashMode(ImageCapture.FLASH_MODE_ON)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.FlashOn,
+                                contentDescription = null
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = {
+                            setFlashMode(ImageCapture.FLASH_MODE_OFF)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.FlashOff,
+                                contentDescription = null
+                            )
+                        }
                     }
                 }
+
+
             }
         }
 
