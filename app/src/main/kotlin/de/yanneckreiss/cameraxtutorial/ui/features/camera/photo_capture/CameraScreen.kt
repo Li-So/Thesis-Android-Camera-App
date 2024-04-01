@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,6 +66,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.yanneckreiss.cameraxtutorial.R
 import de.yanneckreiss.cameraxtutorial.core.utils.rotateBitmap
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
@@ -105,7 +107,7 @@ fun CameraScreen(
         TopScreenToast(
             isVisible = isVisible,
             toggleVisible = { isVisible = false },
-            text = "Photo was saved to camera roll"
+            text = stringResource(R.string.photo_was_saved_to_camera_roll)
         )
 
     }
@@ -128,7 +130,7 @@ private fun TakenPhotoPreview(
         IconButton(onClick = { onPhotoDismissed(null) }) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "",
+                contentDescription = stringResource(R.string.dismiss_photo),
                 modifier = Modifier
                     .size(50.dp)
                     .padding(top = 10.dp, start = 10.dp)
@@ -146,7 +148,7 @@ private fun TakenPhotoPreview(
                 .padding(top = 10.dp, end = 10.dp)
                 .align(TopEnd)
         ) {
-            Icon(imageVector = Icons.Default.Download, contentDescription = "")
+            Icon(imageVector = Icons.Default.Download, contentDescription = stringResource(R.string.save_photo))
         }
 
 
@@ -174,7 +176,7 @@ private fun CameraContent(
                 content = {
                     Icon(
                         imageVector = Icons.Default.RadioButtonUnchecked,
-                        contentDescription = "Camera capture icon",
+                        contentDescription = stringResource(R.string.camera_capture_icon),
                         tint = androidx.compose.ui.graphics.Color.White,
                         modifier = Modifier
                             .size(100.dp)
@@ -213,11 +215,14 @@ private fun CameraContent(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onDoubleTap = {
-                            when(cameraController.cameraSelector){
+                            when (cameraController.cameraSelector) {
                                 CameraSelector.DEFAULT_FRONT_CAMERA -> setCameraSelector(
-                                    CameraSelector.DEFAULT_BACK_CAMERA)
+                                    CameraSelector.DEFAULT_BACK_CAMERA
+                                )
+
                                 CameraSelector.DEFAULT_BACK_CAMERA -> setCameraSelector(
-                                    CameraSelector.DEFAULT_FRONT_CAMERA)
+                                    CameraSelector.DEFAULT_FRONT_CAMERA
+                                )
                             }
                         }
                     )
@@ -229,7 +234,7 @@ private fun CameraContent(
                         }) {
                             Icon(
                                 imageVector = Icons.Default.FlashOn,
-                                contentDescription = null
+                                contentDescription = stringResource(R.string.flash_on)
                             )
                         }
                     } else {
@@ -238,7 +243,7 @@ private fun CameraContent(
                         }) {
                             Icon(
                                 imageVector = Icons.Default.FlashOff,
-                                contentDescription = null
+                                contentDescription = stringResource(R.string.flash_off)
                             )
                         }
                     }
@@ -288,7 +293,7 @@ private fun LastPhotoPreview(
     ) {
         Image(
             bitmap = capturedPhoto,
-            contentDescription = "Last captured photo",
+            contentDescription = stringResource(R.string.last_captured_photo),
             contentScale = androidx.compose.ui.layout.ContentScale.Crop,
             modifier = modifier
         )

@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">Jetpack Compose CameraX Tutorial</string>
+    <string name="app_name">Thesis - Camera App</string>
+    <string name="photo_was_saved_to_camera_roll">Photo was saved to camera roll</string>
+    <string name="dismiss_photo">Dismiss photo</string>
+    <string name="save_photo">Save Photo</string>
+    <string name="camera_capture_icon">Camera capture icon</string>
+    <string name="flash_on">Flash on</string>
+    <string name="flash_off">Flash off</string>
+    <string name="last_captured_photo">Last captured photo</string>
 </resources>
