@@ -80,7 +80,7 @@ fun CameraScreen(
     val cameraState: CameraState by viewModel.state.collectAsStateWithLifecycle()
     val context: Context = LocalContext.current
     val cameraController: LifecycleCameraController =
-        remember { LifecycleCameraController(context) }
+        remember(context) { LifecycleCameraController(context) }
     var isVisible by remember { mutableStateOf(false) }
     val flashMode: Int by viewModel.flashState.collectAsStateWithLifecycle()
     val cameraSelector: CameraSelector by viewModel.cameraSelector.collectAsStateWithLifecycle()
@@ -166,8 +166,13 @@ private fun CameraContent(
     setCameraSelector: (CameraSelector) -> Unit
 ) {
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-    cameraController.imageCaptureFlashMode = flashMode
-    cameraController.cameraSelector = cameraSelector
+    LaunchedEffect(flashMode) {
+        cameraController.imageCaptureFlashMode = flashMode
+    }
+
+    LaunchedEffect(cameraSelector) {
+        cameraController.cameraSelector = cameraSelector
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
