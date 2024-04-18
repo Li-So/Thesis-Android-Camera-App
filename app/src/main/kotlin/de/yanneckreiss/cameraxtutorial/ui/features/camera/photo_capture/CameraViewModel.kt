@@ -33,7 +33,6 @@ class CameraViewModel(
 
     fun storePhotoInGallery(bitmap: Bitmap){
         viewModelScope.launch {
-            Log.d("","HEYEYYEYEYEYEYE")
             savePhotoToGalleryUseCase.call(bitmap)
             updateCapturedPhotoState(null)
         }
